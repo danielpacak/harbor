@@ -17,8 +17,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/scanner"
+	"github.com/goharbor/harbor/src/common/utils/clair"
+	"github.com/goharbor/harbor/src/common/utils/scanner/adapter"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,7 +38,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/common/utils/registry"
@@ -1043,17 +1046,55 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		return
 	}
 	if overview != nil && len(overview.DetailsKey) > 0 {
-		clairClient := clair.NewClient(config.ClairEndpoint(), nil)
-		log.Debugf("The key for getting details: %s", overview.DetailsKey)
-		details, err := clairClient.GetResult(overview.DetailsKey)
+		res, err = ra.getVulnerabilityDetails(overview.DetailsKey)
+
 		if err != nil {
 			ra.SendInternalServerError(fmt.Errorf("Failed to get scan details from Clair, error: %v", err))
 			return
 		}
-		res = transformVulnerabilities(details)
 	}
 	ra.Data["json"] = res
 	ra.ServeJSON()
+}
+
+func (ra *RepositoryAPI) getVulnerabilityDetails(detailsKey string) ([]*models.VulnerabilityItem, error) {
+	if os.Getenv("SCANNER_ADAPTER") == "ON" {
+		return ra.getScannerAdapterVulnerabilityDetails(detailsKey)
+	}
+	return ra.getClairVulnerabilityDetails(detailsKey)
+}
+
+func (ra *RepositoryAPI) getScannerAdapterVulnerabilityDetails(detailsKey string) ([]*models.VulnerabilityItem, error) {
+	imageScanner := ra.GetImageScanner()
+
+	sr, err := imageScanner.GetResult(detailsKey)
+
+	if err != nil {
+		return nil, fmt.Errorf("getting scan results: %v", err)
+	}
+
+	return sr.Vulnerabilities, nil
+}
+
+// TODO DRY
+func (ra *RepositoryAPI) GetImageScanner() scanner.ImageScanner {
+	scannerName, specified := os.LookupEnv("SCANNER_ADAPTER_URL")
+	if !specified {
+		scannerName = adapter.EndpointURL
+	}
+
+	return adapter.NewImageScannerAdapter(scannerName)
+}
+
+// Deprecated Use getScannerAdapterVulnerabilityDetails instead.
+func (ra *RepositoryAPI) getClairVulnerabilityDetails(detailsKey string) ([]*models.VulnerabilityItem, error) {
+	clairClient := clair.NewClient(config.ClairEndpoint(), nil)
+	log.Debugf("The key for getting details: %s", detailsKey)
+	details, err := clairClient.GetResult(detailsKey)
+	if err != nil {
+		return nil, err
+	}
+	return transformVulnerabilities(details), nil
 }
 
 func getSignatures(username, repository string) (map[string][]notary.Target, error) {

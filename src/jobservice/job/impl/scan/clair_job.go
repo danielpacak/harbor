@@ -18,18 +18,20 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"os"
-
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/scanner"
 	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/scanner/adapter"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/utils"
+	"github.com/pkg/errors"
+	"os"
 )
 
 // ClairJob is the struct to scan Harbor's Image with Clair
@@ -57,6 +59,75 @@ func (cj *ClairJob) Validate(params job.Parameters) error {
 
 // Run implements the interface in job/Interface
 func (cj *ClairJob) Run(ctx job.Context, params job.Parameters) error {
+	if os.Getenv("SCANNER_ADAPTER") == "ON" {
+		return cj.runWithScannerAdapter(ctx, params)
+	}
+	return cj.runWithClairScanner(ctx, params)
+}
+
+func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters) error {
+	logger := ctx.GetLogger()
+	if err := cj.init(ctx); err != nil {
+		logger.Errorf("Failed to initialize the job, error: %v", err)
+		return err
+	}
+
+	jobParms, err := transformParam(params)
+	if err != nil {
+		logger.Errorf("Failed to prepare parms for scan job, error: %v", err)
+		return err
+	}
+
+	token, err := utils.GetTokenForRepo(jobParms.Repository, cj.secret, cj.tokenEndpoint)
+	if err != nil {
+		logger.Errorf("Failed to get token, error: %v", err)
+		return err
+	}
+
+	imageScanner := cj.GetImageScanner()
+
+	scanResponse, err := imageScanner.RequestScan(scanner.ScanRequest{
+		Digest:        jobParms.Digest,
+		RegistryURL:   cj.registryURL,
+		RegistryToken: token,
+		Repository:    jobParms.Repository,
+		Tag:           jobParms.Tag,
+	})
+
+	if err != nil {
+		logger.Errorf("Error while creating image scan request: %v", err)
+		return err
+	}
+
+	scanResult, err := imageScanner.GetResult(scanResponse.DetailsKey)
+	if err != nil {
+		logger.Errorf("Error while getting image scan result: %v", err)
+		return err
+	}
+
+	err = dao.UpdateImgScanOverview(jobParms.Digest,
+		scanResponse.DetailsKey,
+		scanResult.Severity,
+		scanResult.Overview)
+
+	if err != nil {
+		return errors.Wrapf(err, "updating image scan overview: %v", err)
+	}
+	return nil
+}
+
+// TODO DRY
+func (cj *ClairJob) GetImageScanner() scanner.ImageScanner {
+	scannerName, specified := os.LookupEnv("SCANNER_ADAPTER_URL")
+	if !specified {
+		scannerName = adapter.EndpointURL
+	}
+
+	return adapter.NewImageScannerAdapter(scannerName)
+}
+
+// Deprecated Use runWithScannerAdapter instead.
+func (cj *ClairJob) runWithClairScanner(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 	if err := cj.init(ctx); err != nil {
 		logger.Errorf("Failed to initialize the job, error: %v", err)
