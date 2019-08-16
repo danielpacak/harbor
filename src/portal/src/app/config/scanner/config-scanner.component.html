@@ -1,0 +1,34 @@
+<div class="row">
+    <div>
+        <clr-datagrid [clrDgSelected]="selectedRow">
+            <clr-dg-action-bar>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="addNewScanner()">
+                    <clr-icon shape="plus" size="16"></clr-icon>
+                    NEW SCANNER
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary">SET AS DEFAULT</button>
+                <button type="button" class="btn btn-sm btn-secondary" [disabled]="false">
+                    <clr-icon shape="pencil" size="16"></clr-icon>
+                    EDIT
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" [disabled]="false">
+                    <clr-icon shape="times" size="16"></clr-icon>
+                    DELETE
+                </button>
+            </clr-dg-action-bar>
+            <clr-dg-column>Name</clr-dg-column>
+            <clr-dg-column>Endpoint URL</clr-dg-column>
+            <clr-dg-column>Authorization</clr-dg-column>
+            <clr-dg-column>Default</clr-dg-column>
+            <clr-dg-row *ngFor="let scanner of scanners" [clrDgItem]="scanner">
+                <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.endpointUrl}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.authorization}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.isDefault}}</clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+    <new-scanner-modal></new-scanner-modal>
+</div>

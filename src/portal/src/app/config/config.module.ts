@@ -12,30 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { NgModule } from "@angular/core";
-import { CoreModule } from "../core/core.module";
-import { SharedModule } from "../shared/shared.module";
+import {NgModule} from "@angular/core";
+import {CoreModule} from "../core/core.module";
+import {SharedModule} from "../shared/shared.module";
 
-import { ConfigurationComponent } from "./config.component";
-import { ConfigurationService } from "./config.service";
-import { ConfirmMessageHandler } from "./config.msg.utils";
-import { ConfigurationAuthComponent } from "./auth/config-auth.component";
-import { ConfigurationEmailComponent } from "./email/config-email.component";
-import { RobotApiRepository } from "../project/robot-account/robot.api.repository";
+import {ConfigurationComponent} from "./config.component";
+import {ConfigurationService} from "./config.service";
+import {ConfirmMessageHandler} from "./config.msg.utils";
+import {ConfigurationAuthComponent} from "./auth/config-auth.component";
+import {ConfigurationEmailComponent} from "./email/config-email.component";
+import {RobotApiRepository} from "../project/robot-account/robot.api.repository";
+import {ConfigurationScannerComponent} from "./scanner/config-scanner.component";
+import {NewScannerModalComponent} from "./scanner/new-scanner-modal.component";
+import {ConfigScannerService} from "./scanner/config-scanner.service";
+import {NewScannerFormComponent} from "./scanner/new-scanner-form.component";
 
 
 @NgModule({
-  imports: [CoreModule, SharedModule],
-  declarations: [
-    ConfigurationComponent,
-    ConfigurationAuthComponent,
-    ConfigurationEmailComponent
-  ],
-  exports: [ConfigurationComponent],
-  providers: [
-    ConfigurationService,
-    ConfirmMessageHandler,
-    RobotApiRepository
-  ]
+    imports: [CoreModule, SharedModule],
+    declarations: [
+        ConfigurationComponent,
+        ConfigurationAuthComponent,
+        ConfigurationEmailComponent,
+        ConfigurationScannerComponent,
+        NewScannerModalComponent,
+        NewScannerFormComponent,
+    ],
+    exports: [ConfigurationComponent],
+    providers: [
+        ConfigurationService,
+        ConfirmMessageHandler,
+        RobotApiRepository,
+        ConfigScannerService,
+    ]
 })
-export class ConfigurationModule {}
+export class ConfigurationModule {
+}

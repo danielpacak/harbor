@@ -1,0 +1,11 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
+    <h3 class="modal-title">Add Scanner</h3>
+    <div class="modal-body body-format">
+        <new-scanner-form></new-scanner-form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline">TEST CONNECTION</button>
+        <button type="button" class="btn btn-outline" (click)="close()">CANCEL</button>
+        <button type="button" class="btn btn-primary" (click)="create()">OK</button>
+    </div>
+</clr-modal>

@@ -25,6 +25,7 @@ import { AppConfigService } from '../app-config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
 import { ConfigurationService } from './config.service';
+import {ConfigurationScannerComponent} from "./scanner/config-scanner.component";
 
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
@@ -51,6 +52,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
     @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
+    @ViewChild(ConfigurationScannerComponent) scannerConfig: ConfigurationScannerComponent;
 
     constructor(
         private msgHandler: MessageHandlerService,
