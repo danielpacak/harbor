@@ -1067,7 +1067,7 @@ func (ra *RepositoryAPI) getVulnerabilityDetails(detailsKey string) ([]*models.V
 func (ra *RepositoryAPI) getScannerAdapterVulnerabilityDetails(detailsKey string) ([]*models.VulnerabilityItem, error) {
 	imageScanner := ra.GetImageScanner()
 
-	sr, err := imageScanner.GetResult(detailsKey)
+	sr, err := imageScanner.GetScanReport(detailsKey)
 
 	if err != nil {
 		return nil, fmt.Errorf("getting scan results: %v", err)

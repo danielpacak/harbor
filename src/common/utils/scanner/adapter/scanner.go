@@ -6,7 +6,7 @@ import (
 
 const (
 	// TODO Read from config
-	EndpointURL = "http://harbor-microscanner-adapter:8080/api/v1"
+	EndpointURL = "http://harbor-scanner-microscanner:8080/api/v1"
 )
 
 type scannerAdapter struct {
@@ -21,10 +21,10 @@ func NewImageScannerAdapter(endpointURL string) scanner.ImageScanner {
 	}
 }
 
-func (ms *scannerAdapter) RequestScan(req scanner.ScanRequest) (*scanner.ScanResponse, error) {
-	return ms.client.RequestScan(req)
+func (sa *scannerAdapter) RequestScan(req scanner.ScanRequest) error {
+	return sa.client.RequestScan(req)
 }
 
-func (ms *scannerAdapter) GetResult(detailsKey string) (*scanner.ScanResult, error) {
-	return ms.client.GetScanResult(detailsKey)
+func (sa *scannerAdapter) GetScanReport(scanRequestID string) (*scanner.VulnerabilityReport, error) {
+	return sa.client.GetScanReport(scanRequestID)
 }

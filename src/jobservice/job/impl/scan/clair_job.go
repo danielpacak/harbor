@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/scanner/adapter"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/utils"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"os"
 )
@@ -86,29 +87,32 @@ func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters
 
 	imageScanner := cj.GetImageScanner()
 
-	scanResponse, err := imageScanner.RequestScan(scanner.ScanRequest{
-		Digest:        jobParms.Digest,
-		RegistryURL:   cj.registryURL,
-		RegistryToken: token,
-		Repository:    jobParms.Repository,
-		Tag:           jobParms.Tag,
+	scanRequestID := uuid.New()
+
+	err = imageScanner.RequestScan(scanner.ScanRequest{
+		ID: scanRequestID.String(),
+		// RegistryURL:           cj.registryURL,
+		RegistryURL:           "core.harbor.domain",
+		RegistryAuthorization: token,
+		ArtifactRepository:    jobParms.Repository,
+		ArtifactDigest:        jobParms.Digest,
 	})
 
 	if err != nil {
-		logger.Errorf("Error while creating image scan request: %v", err)
+		logger.Errorf("Error while requesting scan: %v", err)
 		return err
 	}
 
-	scanResult, err := imageScanner.GetResult(scanResponse.DetailsKey)
+	scanReport, err := imageScanner.GetScanReport(scanRequestID.String())
 	if err != nil {
-		logger.Errorf("Error while getting image scan result: %v", err)
+		logger.Errorf("Error while getting scan report: %v", err)
 		return err
 	}
 
 	err = dao.UpdateImgScanOverview(jobParms.Digest,
-		scanResponse.DetailsKey,
-		scanResult.Severity,
-		scanResult.Overview)
+		scanRequestID.String(),
+		scanReport.Severity,
+		scanReport.ToComponentsOverview())
 
 	if err != nil {
 		return errors.Wrapf(err, "updating image scan overview: %v", err)
@@ -116,7 +120,6 @@ func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters
 	return nil
 }
 
-// TODO DRY
 func (cj *ClairJob) GetImageScanner() scanner.ImageScanner {
 	scannerName, specified := os.LookupEnv("SCANNER_ADAPTER_URL")
 	if !specified {
