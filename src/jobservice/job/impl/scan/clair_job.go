@@ -85,7 +85,11 @@ func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters
 		return err
 	}
 
-	imageScanner := cj.GetImageScanner()
+	imageScanner, err := adapter.GetImageScanner()
+	if err != nil {
+		logger.Errorf("Error while getting image scanner: %v", err)
+		return err
+	}
 
 	scanRequestID := uuid.New()
 
@@ -118,15 +122,6 @@ func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters
 		return errors.Wrapf(err, "updating image scan overview: %v", err)
 	}
 	return nil
-}
-
-func (cj *ClairJob) GetImageScanner() scanner.ImageScanner {
-	scannerName, specified := os.LookupEnv("SCANNER_ADAPTER_URL")
-	if !specified {
-		scannerName = adapter.EndpointURL
-	}
-
-	return adapter.NewImageScannerAdapter(scannerName)
 }
 
 // Deprecated Use runWithScannerAdapter instead.

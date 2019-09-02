@@ -17,7 +17,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/scanner"
 	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/scanner/adapter"
 	"io/ioutil"
@@ -1065,7 +1064,10 @@ func (ra *RepositoryAPI) getVulnerabilityDetails(detailsKey string) ([]*models.V
 }
 
 func (ra *RepositoryAPI) getScannerAdapterVulnerabilityDetails(detailsKey string) ([]*models.VulnerabilityItem, error) {
-	imageScanner := ra.GetImageScanner()
+	imageScanner, err := adapter.GetImageScanner()
+	if err != nil {
+		return nil, fmt.Errorf("getting image scanner: %v", err)
+	}
 
 	sr, err := imageScanner.GetScanReport(detailsKey)
 
@@ -1074,16 +1076,6 @@ func (ra *RepositoryAPI) getScannerAdapterVulnerabilityDetails(detailsKey string
 	}
 
 	return sr.Vulnerabilities, nil
-}
-
-// TODO DRY
-func (ra *RepositoryAPI) GetImageScanner() scanner.ImageScanner {
-	scannerName, specified := os.LookupEnv("SCANNER_ADAPTER_URL")
-	if !specified {
-		scannerName = adapter.EndpointURL
-	}
-
-	return adapter.NewImageScannerAdapter(scannerName)
 }
 
 // Deprecated Use getScannerAdapterVulnerabilityDetails instead.

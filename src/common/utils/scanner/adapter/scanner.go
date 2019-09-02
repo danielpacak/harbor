@@ -4,11 +4,6 @@ import (
 	"github.com/goharbor/harbor/src/common/scanner"
 )
 
-const (
-	// TODO Read from config
-	EndpointURL = "http://harbor-scanner-microscanner:8080/api/v1"
-)
-
 type scannerAdapter struct {
 	client *Client
 }

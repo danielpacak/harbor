@@ -60,6 +60,11 @@ func initRouters() {
 		beego.Router("/api/ldap/groups/search", &api.LdapAPI{}, "get:SearchGroup")
 		beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
 		beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
+
+		beego.Router("/api/scanner/registrations/:id", &api.ScannerRegistrationAPI{}, "get:Get;delete:Delete")
+		beego.Router("/api/scanner/registrations", &api.ScannerRegistrationAPI{}, "get:List;post:Post")
+		beego.Router("/api/scanner/registrations/default", &api.ScannerRegistrationAPI{}, "get:GetDefault")
+		beego.Router("/api/scanner/registrations/:id([0-9]+)/default", &api.ScannerRegistrationAPI{}, "put:SetDefault")
 	}
 
 	// API
