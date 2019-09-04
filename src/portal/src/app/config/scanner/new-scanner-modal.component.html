@@ -1,11 +1,16 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
     <h3 class="modal-title">Add Scanner</h3>
-    <div class="modal-body body-format">
+    <div class="modal-body">
         <new-scanner-form></new-scanner-form>
+        <div class="alert alert-warning" *ngIf="scannerMetadata">
+            <div class="alert-item static">
+                <span class="alert-text">{{scannerMetadata | json}}</span>
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline">TEST CONNECTION</button>
+        <button type="button" class="btn btn-outline" (click)="testConnection()">TEST CONNECTION</button>
         <button type="button" class="btn btn-outline" (click)="close()">CANCEL</button>
-        <button type="button" class="btn btn-primary" (click)="create()">OK</button>
+        <button type="button" class="btn btn-primary" (click)="ok()">OK</button>
     </div>
 </clr-modal>

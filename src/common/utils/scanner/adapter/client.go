@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/scanner"
 	"io/ioutil"
 	"net/http"
@@ -18,6 +19,30 @@ func NewClient(endpointURL string) *Client {
 	return &Client{
 		endpointURL: endpointURL,
 	}
+}
+
+func (c *Client) GetMetadata() (*models.ScannerMetadata, error) {
+	url := fmt.Sprintf("%s/metadata", c.endpointURL)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	res, err := http.DefaultTransport.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("invalid response status: %s", res.Status)
+	}
+	b, _ := ioutil.ReadAll(res.Body)
+	_ = res.Body.Close()
+
+	var metadata models.ScannerMetadata
+	err = json.Unmarshal(b, &metadata)
+	if err != nil {
+		return nil, err
+	}
+	return &metadata, nil
 }
 
 func (c *Client) RequestScan(request scanner.ScanRequest) error {
@@ -55,7 +80,7 @@ func (c *Client) GetScanReport(scanRequestID string) (*scanner.VulnerabilityRepo
 		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid response statu %s", res.Status)
+		return nil, fmt.Errorf("invalid response status: %s", res.Status)
 	}
 
 	b, _ := ioutil.ReadAll(res.Body)

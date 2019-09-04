@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/scanner/adapter"
 )
 
 type ScannerRegistrationAPI struct {
@@ -35,6 +36,20 @@ func (sra *ScannerRegistrationAPI) Post() {
 	err = sra.DAO().Create(&registration)
 	if err != nil {
 		sra.SendInternalServerError(fmt.Errorf("creating scanner registration: %v", err))
+		return
+	}
+}
+
+func (sra *ScannerRegistrationAPI) Put() {
+	var registration models.ScannerRegistration
+	err := sra.DecodeJSONReq(&registration)
+	if err != nil {
+		sra.SendInternalServerError(fmt.Errorf("decoding request: %v", err))
+		return
+	}
+	err = sra.DAO().Update(&registration)
+	if err != nil {
+		sra.SendInternalServerError(fmt.Errorf("updating scanner registration: %v", err))
 		return
 	}
 }
@@ -91,6 +106,48 @@ func (sra *ScannerRegistrationAPI) GetDefault() {
 		return
 	}
 	sra.serveJSONData(registration)
+}
+
+func (sra *ScannerRegistrationAPI) GetMetadata() {
+	id, err := sra.GetInt64FromPath(":id")
+	if err != nil {
+		sra.SendInternalServerError(err)
+		return
+	}
+	registration, err := sra.DAO().FindByID(id)
+	if err != nil {
+		sra.SendInternalServerError(err)
+		return
+	}
+
+	client := adapter.NewClient(registration.EndpointURL)
+	metadata, err := client.GetMetadata()
+	if err != nil {
+		sra.SendInternalServerError(err)
+		return
+	}
+
+	sra.serveJSONData(metadata)
+}
+
+func (sra *ScannerRegistrationAPI) Ping() {
+	req := struct {
+		EndpointURL   string `json:"endpoint_url"`
+		Authorization string `json:"authorization"`
+	}{}
+	err := sra.DecodeJSONReq(&req)
+	if err != nil {
+		sra.SendInternalServerError(err)
+		return
+	}
+	client := adapter.NewClient(req.EndpointURL)
+	metadata, err := client.GetMetadata()
+	if err != nil {
+		sra.SendInternalServerError(err)
+		return
+	}
+
+	sra.serveJSONData(metadata)
 }
 
 func (sra *ScannerRegistrationAPI) serveJSONData(data interface{}) {

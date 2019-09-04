@@ -1,4 +1,4 @@
-import {AfterViewChecked, Component, OnInit, ViewChild} from "@angular/core";
+import {Component, ViewChild} from "@angular/core";
 import {NgForm} from "@angular/forms";
 import {Scanner} from "./scanner";
 
@@ -7,20 +7,17 @@ import {Scanner} from "./scanner";
     templateUrl: 'new-scanner-form.component.html',
     styleUrls: ['new-scanner-form.component.scss', '../../common.scss']
 })
-export class NewScannerFormComponent implements AfterViewChecked, OnInit {
+export class NewScannerFormComponent {
 
     @ViewChild("newScannerForm") newScannerForm: NgForm;
-    newScanner: Scanner = new Scanner(1, "x", "y", "x", false);
-
-    ngOnInit() {
-
-    }
-
-    ngAfterViewChecked(): void {
-    }
+    newScanner: Scanner = new Scanner();
 
     getData(): Scanner {
         return this.newScanner;
+    }
+
+    setData(scanner: Scanner): void {
+        this.newScanner = scanner;
     }
 
 }

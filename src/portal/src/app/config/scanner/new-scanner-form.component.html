@@ -1,27 +1,22 @@
-<div>
-    <form #newScannerForm="ngForm" class="form">
-        <section class="form-block">
-            <div class="form-group form-group-override">
-                <label for="name" class="required form-group-label-override">Name</label>
-                <input type="text" required #nameInput="ngModel" [(ngModel)]="newScanner.name" name="name" id="name"
-                       size="30">
-            </div>
-            <div class="form-group form-group-override">
-                <label for="description" class="form-group-label-override">Description</label>
-                <textarea type="text" #descriptionInput="ngModel" [(ngModel)]="newScanner.description"
-                          name="description" id="description">
+<form #newScannerForm="ngForm" class="form">
+    <div class="form-group form-group-override">
+        <label for="name" class="required form-group-label-override">Name</label>
+        <input type="text" required #nameInput="ngModel" [(ngModel)]="newScanner.name" name="name" id="name"
+               size="30">
+    </div>
+    <div class="form-group form-group-override">
+        <label for="endpointUrl" class="required form-group-label-override">Endpoint URL</label>
+        <input type="text" required #endpointUrlInput="ngModel" [(ngModel)]="newScanner.endpoint_url"
+               name="endpointUrl" id="endpointUrl" size="30">
+    </div>
+    <div class="form-group form-group-override">
+        <label for="scanner_enabled" class="form-group-label-override">Enabled</label>
+        <input type="checkbox" clrCheckbox id="scanner_enabled" [(ngModel)]="newScanner.enabled" name="scanner_enabled">
+    </div>
+    <div class="form-group form-group-override">
+        <label for="description" class="form-group-label-override">Description</label>
+        <textarea class="clr-textarea" type="text" #descriptionInput="ngModel" [(ngModel)]="newScanner.description"
+                  name="description" id="description">
                 </textarea>
-            </div>
-            <div class="form-group form-group-override">
-                <label for="endpointUrl" class="required form-group-label-override">Endpoint URL</label>
-                <input type="text" required #endpointUrlInput="ngModel" [(ngModel)]="newScanner.endpointUrl"
-                       name="endpointUrl" id="endpointUrl" size="30">
-            </div>
-            <div class="form-group form-group-override">
-                <label for="authorization" class="form-group-label-override">Authorization</label>
-                <input type="text" required #authorizationInput="ngModel" [(ngModel)]="newScanner.authorization"
-                       name="authorization" id="authorization" size="30">
-            </div>
-        </section>
-    </form>
-</div>
+    </div>
+</form>

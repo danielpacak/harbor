@@ -96,7 +96,8 @@ func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters
 	err = imageScanner.RequestScan(scanner.ScanRequest{
 		ID: scanRequestID.String(),
 		// RegistryURL:           cj.registryURL,
-		RegistryURL:           "core.harbor.domain",
+		// TODO How do we get public registry URL? Is there an env?
+		RegistryURL:           "https://core.harbor.domain",
 		RegistryAuthorization: token,
 		ArtifactRepository:    jobParms.Repository,
 		ArtifactDigest:        jobParms.Digest,

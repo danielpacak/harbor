@@ -8,6 +8,7 @@ import (
 
 type ScannerRegistrationDAO interface {
 	Create(registration *models.ScannerRegistration) error
+	Update(registration *models.ScannerRegistration) error
 	FindByID(id int64) (*models.ScannerRegistration, error)
 	FindAll() ([]*models.ScannerRegistration, error)
 	Delete(id int64) error
@@ -24,6 +25,11 @@ type scannerRegistrationDAO struct {
 
 func (s *scannerRegistrationDAO) Create(registration *models.ScannerRegistration) error {
 	_, err := GetOrmer().Insert(registration)
+	return err
+}
+
+func (s *scannerRegistrationDAO) Update(registration *models.ScannerRegistration) error {
+	_, err := GetOrmer().Update(registration)
 	return err
 }
 
