@@ -4,12 +4,23 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 )
 
+type Registry struct {
+	URL           string `json:"url"`
+	Authorization string `json:"authorization"`
+}
+
+type Artifact struct {
+	Repository string `json:"repository"`
+	Digest     string `json:"digest"`
+}
+
 type ScanRequest struct {
-	ID                    string `json:"id"`
-	RegistryURL           string `json:"registry_url"`
-	RegistryAuthorization string `json:"registry_authorization"`
-	ArtifactRepository    string `json:"artifact_repository"`
-	ArtifactDigest        string `json:"artifact_digest"`
+	Registry Registry `json:"registry"`
+	Artifact Artifact `json:"artifact"`
+}
+
+type ScanResponse struct {
+	ID string `json:"id"`
 }
 
 type VulnerabilityReport struct {
@@ -57,6 +68,6 @@ func (r *VulnerabilityReport) ToComponentsOverview() *models.ComponentsOverview 
 //
 // GetResult pulls scan results from the actual scanner.
 type ImageScanner interface {
-	RequestScan(req ScanRequest) error
+	RequestScan(req ScanRequest) (*ScanResponse, error)
 	GetScanReport(scanRequestID string) (*VulnerabilityReport, error)
 }

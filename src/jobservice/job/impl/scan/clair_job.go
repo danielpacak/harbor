@@ -30,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/scanner/adapter"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/utils"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"os"
 )
@@ -91,16 +90,17 @@ func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters
 		return err
 	}
 
-	scanRequestID := uuid.New()
-
-	err = imageScanner.RequestScan(scanner.ScanRequest{
-		ID: scanRequestID.String(),
+	scanResponse, err := imageScanner.RequestScan(scanner.ScanRequest{
 		// RegistryURL:           cj.registryURL,
 		// TODO How do we get public registry URL? Is there an env?
-		RegistryURL:           "https://core.harbor.domain",
-		RegistryAuthorization: token,
-		ArtifactRepository:    jobParms.Repository,
-		ArtifactDigest:        jobParms.Digest,
+		Registry: scanner.Registry{
+			URL:           "https://core.harbor.domain",
+			Authorization: token,
+		},
+		Artifact: scanner.Artifact{
+			Repository: jobParms.Repository,
+			Digest:     jobParms.Digest,
+		},
 	})
 
 	if err != nil {
@@ -108,14 +108,14 @@ func (cj *ClairJob) runWithScannerAdapter(ctx job.Context, params job.Parameters
 		return err
 	}
 
-	scanReport, err := imageScanner.GetScanReport(scanRequestID.String())
+	scanReport, err := imageScanner.GetScanReport(scanResponse.ID)
 	if err != nil {
 		logger.Errorf("Error while getting scan report: %v", err)
 		return err
 	}
 
 	err = dao.UpdateImgScanOverview(jobParms.Digest,
-		scanRequestID.String(),
+		scanResponse.ID,
 		scanReport.Severity,
 		scanReport.ToComponentsOverview())
 

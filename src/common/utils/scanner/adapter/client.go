@@ -45,29 +45,37 @@ func (c *Client) GetMetadata() (*models.ScannerMetadata, error) {
 	return &metadata, nil
 }
 
-func (c *Client) RequestScan(request scanner.ScanRequest) error {
+func (c *Client) RequestScan(request scanner.ScanRequest) (*scanner.ScanResponse, error) {
 	url := c.endpointURL + "/scan"
 	b, err := json.Marshal(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultTransport.RoundTrip(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("invalid response status: %v %v", resp.StatusCode, resp.Status)
+		return nil, fmt.Errorf("invalid response status: %v %v", resp.StatusCode, resp.Status)
 	}
 
-	return nil
+	rb, _ := ioutil.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+
+	var scanResponse scanner.ScanResponse
+	err = json.Unmarshal(rb, &scanResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &scanResponse, nil
 }
 
 func (c *Client) GetScanReport(scanRequestID string) (*scanner.VulnerabilityReport, error) {

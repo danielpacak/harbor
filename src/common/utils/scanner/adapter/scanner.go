@@ -16,7 +16,7 @@ func NewImageScannerAdapter(endpointURL string) scanner.ImageScanner {
 	}
 }
 
-func (sa *scannerAdapter) RequestScan(req scanner.ScanRequest) error {
+func (sa *scannerAdapter) RequestScan(req scanner.ScanRequest) (*scanner.ScanResponse, error) {
 	return sa.client.RequestScan(req)
 }
 
