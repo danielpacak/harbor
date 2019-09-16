@@ -1,13 +1,18 @@
 package models
 
-type ScannerMetadata struct {
-	Name         string        `json:"name"`
-	Vendor       string        `json:"vendor"`
-	Version      string        `json:"version"`
-	Capabilities []*Capability `json:"capabilities"`
+type Scanner struct {
+	Name    string `json:"name"`
+	Vendor  string `json:"vendor"`
+	Version string `json:"version"`
 }
 
 type Capability struct {
-	ArtifactMIMETypes []string `json:"artifact_mime_types"`
-	ReportMIMETypes   []string `json:"report_mime_types"`
+	ConsumesMIMETypes []string `json:"consumes_mime_types"`
+	ProducesMIMETypes []string `json:"produces_mime_types"`
+}
+
+type ScannerMetadata struct {
+	Scanner      Scanner           `json:"scanner"`
+	Capabilities []Capability      `json:"capabilities"`
+	Properties   map[string]string `json:"properties"`
 }
